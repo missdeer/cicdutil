@@ -165,4 +165,5 @@ jobs:
 
     - name: Remove old artifacts
       run: |
+        sleep 180
         linux-amd64/cicdutil -p github -u missdeer -t ${{ secrets.GH_TOKEN }} -r cicdutil -k 15 -a delete
