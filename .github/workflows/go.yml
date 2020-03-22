@@ -34,7 +34,6 @@ jobs:
         env CGO_ENABLED=0 GOOS=netbsd GOARCH=amd64 go build -o netbsd-amd64/cicdutil -ldflags="-s -w" .
         env CGO_ENABLED=0 GOOS=netbsd GOARCH=386 go build -o netbsd-386/cicdutil -ldflags="-s -w" .
         env CGO_ENABLED=0 GOOS=dragonfly GOARCH=amd64 go build -o dragonfly-amd64/cicdutil -ldflags="-s -w" .
-        linux-amd64/cicdutil -p github -u missdeer -t ${{ secrets.GH_TOKEN }} -r cicdutil -k 16 -a delete
       
     - name: Upload artifact cicdutil-linux-amd64
       uses: actions/upload-artifact@v1.0.0
@@ -163,3 +162,7 @@ jobs:
         name: cicdutil-windows-386
         # Directory containing files to upload
         path: windows-386
+
+    - name: Remove old artifacts
+      run: |
+        linux-amd64/cicdutil -p github -u missdeer -t ${{ secrets.GH_TOKEN }} -r cicdutil -k 16 -a delete
