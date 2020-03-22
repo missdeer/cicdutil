@@ -15,6 +15,7 @@ var (
 	downloadToolPath string
 	keep             string
 	download         string
+	saveDir          string
 )
 
 type IProvider interface {
@@ -32,6 +33,7 @@ func main() {
 	flag.StringVarP(&downloadToolPath, "downloader", "d", "", "Donwload tool path, supports aria2, curl, wget")
 	flag.StringVarP(&download, "download", "", "", "Download artifacts, can be count number or today")
 	flag.StringVarP(&keep, "keep", "k", "", "Keep artifacts that won't be deleted, can be count number or today")
+	flag.StringVarP(&saveDir, "download-directory", "", ".", "Download file to the specified directory")
 	flag.Parse()
 
 	var handler IProvider
