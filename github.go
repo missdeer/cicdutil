@@ -132,7 +132,7 @@ func (gh *Github) DeleteArtifacts() {
 		return
 	}
 
-	for i := count - 1; i < len(artifacts.Artifacts); i++ {
+	for i := count; i < len(artifacts.Artifacts); i++ {
 		artifact := artifacts.Artifacts[i]
 		gh.delete(artifact.ID)
 	}
@@ -155,7 +155,7 @@ func (gh *Github) DownloadArtifacts() {
 			if artifact.CreatedAt.Year() != time.Now().UTC().Year() ||
 				artifact.CreatedAt.Month() != time.Now().UTC().Month() ||
 				artifact.CreatedAt.Day() != time.Now().UTC().Day() {
-				Download(downloadToolPath, artifact.ArchiveDownloadURL, fmt.Sprintf("%d.zip", artifact.ID))
+				Download(downloadToolPath, artifact.ArchiveDownloadURL, fmt.Sprintf("%s.zip", artifact.Name))
 			}
 		}
 		return
@@ -169,6 +169,6 @@ func (gh *Github) DownloadArtifacts() {
 
 	for i := 0; i < count; i++ {
 		artifact := artifacts.Artifacts[i]
-		Download(downloadToolPath, artifact.ArchiveDownloadURL, fmt.Sprintf("%d.zip", artifact.ID))
+		Download(downloadToolPath, artifact.ArchiveDownloadURL, fmt.Sprintf("%s.zip", artifact.Name))
 	}
 }
