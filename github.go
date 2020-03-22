@@ -12,11 +12,6 @@ import (
 )
 
 type Github struct {
-	username   string
-	token      string
-	repository string
-	keep       string
-	download   string
 }
 
 type GithubActionsArtifacts struct {
@@ -35,7 +30,7 @@ type GithubActionsArtifacts struct {
 }
 
 func (gh *Github) list() ([]byte, error) {
-	u := fmt.Sprintf(`https://api.github.com/repos/%s/%s/actions/artifacts`, gh.username, gh.repository)
+	u := fmt.Sprintf(`https://api.github.com/repos/%s/%s/actions/artifacts`, username, repository)
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", u, nil)
@@ -67,7 +62,7 @@ func (gh *Github) list() ([]byte, error) {
 }
 
 func (gh *Github) delete(id int) error {
-	u := fmt.Sprintf(`https://api.github.com/repos/%s/%s/actions/artifacts/%d`, gh.username, gh.repository, id)
+	u := fmt.Sprintf(`https://api.github.com/repos/%s/%s/actions/artifacts/%d`, username, repository, id)
 	client := &http.Client{}
 
 	req, err := http.NewRequest("DELETE", u, nil)
@@ -117,7 +112,7 @@ func (gh *Github) DeleteArtifacts() {
 		log.Println(err)
 		return
 	}
-	if gh.keep == "today" {
+	if keep == "today" {
 		for _, artifact := range artifacts.Artifacts {
 			if artifact.CreatedAt.Year() != time.Now().UTC().Year() ||
 				artifact.CreatedAt.Month() != time.Now().UTC().Month() ||
@@ -128,7 +123,7 @@ func (gh *Github) DeleteArtifacts() {
 		return
 	}
 
-	count, err := strconv.Atoi(gh.keep)
+	count, err := strconv.Atoi(keep)
 	if err != nil {
 		log.Println(err)
 		return
@@ -152,7 +147,7 @@ func (gh *Github) DownloadArtifacts() {
 		return
 	}
 
-	if gh.download == "today" {
+	if download == "today" {
 		for _, artifact := range artifacts.Artifacts {
 			if artifact.CreatedAt.Year() != time.Now().UTC().Year() ||
 				artifact.CreatedAt.Month() != time.Now().UTC().Month() ||
@@ -163,7 +158,7 @@ func (gh *Github) DownloadArtifacts() {
 		return
 	}
 
-	count, err := strconv.Atoi(gh.download)
+	count, err := strconv.Atoi(download)
 	if err != nil {
 		log.Println(err)
 		return

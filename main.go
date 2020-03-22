@@ -39,21 +39,9 @@ func main() {
 	var handler IProvider
 	switch provider {
 	case "github":
-		handler = &Github{
-			username:   username,
-			token:      token,
-			repository: repository,
-			download:   download,
-			keep:       keep,
-		}
+		handler = &Github{}
 	case "appveyor":
-		handler = &Appveyor{
-			username:   username,
-			token:      token,
-			repository: repository,
-			download:   download,
-			keep:       keep,
-		}
+		handler = &Appveyor{}
 	default:
 		log.Fatal("unsupported provider")
 	}
