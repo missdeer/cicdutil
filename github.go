@@ -84,9 +84,9 @@ func (gh *Github) delete(id int) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
-		log.Println("delete artifact response not 200:", resp.Status)
-		return fmt.Errorf("delete artifact response not 200:", resp.Status)
+	if resp.StatusCode != 204 {
+		log.Println("delete artifact response not 204:", resp.Status)
+		return fmt.Errorf("delete artifact response not 204:", resp.Status)
 	}
 
 	_, err = ioutil.ReadAll(resp.Body)
@@ -94,6 +94,7 @@ func (gh *Github) delete(id int) error {
 		log.Println("reading delete artifact response failed", err)
 		return err
 	}
+	log.Println("artifact", id, "has been deleted")
 	return nil
 }
 
