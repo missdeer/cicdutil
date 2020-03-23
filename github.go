@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"time"
 )
@@ -30,7 +31,7 @@ type GithubActionsArtifacts struct {
 }
 
 func (gh *Github) list() ([]byte, error) {
-	u := fmt.Sprintf(`https://api.github.com/repos/%s/%s/actions/artifacts`, username, repository)
+	u := fmt.Sprintf(`https://api.github.com/repos/%s/%s/actions/artifacts`, username, project)
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", u, nil)
@@ -62,7 +63,7 @@ func (gh *Github) list() ([]byte, error) {
 }
 
 func (gh *Github) delete(id int) error {
-	u := fmt.Sprintf(`https://api.github.com/repos/%s/%s/actions/artifacts/%d`, username, repository, id)
+	u := fmt.Sprintf(`https://api.github.com/repos/%s/%s/actions/artifacts/%d`, username, project, id)
 	client := &http.Client{}
 
 	req, err := http.NewRequest("DELETE", u, nil)
@@ -147,13 +148,18 @@ func (gh *Github) DownloadArtifacts() {
 		return
 	}
 
+	r := regexp.MustCompile(downloadNameFilter)
 	if download == "today" {
 		for _, artifact := range artifacts.Artifacts {
+			if r != nil && !r.MatchString(artifact.Name) {
+				continue
+			}
 			if artifact.CreatedAt.Year() != time.Now().UTC().Year() ||
 				artifact.CreatedAt.Month() != time.Now().UTC().Month() ||
 				artifact.CreatedAt.Day() != time.Now().UTC().Day() {
-				Download(downloadToolPath, artifact.ArchiveDownloadURL, filepath.Join(saveDir, fmt.Sprintf("%s.zip", artifact.Name)))
+				continue
 			}
+			Download(downloadToolPath, artifact.ArchiveDownloadURL, filepath.Join(saveDir, fmt.Sprintf("%s.zip", artifact.Name)))
 		}
 		return
 	}
@@ -166,6 +172,9 @@ func (gh *Github) DownloadArtifacts() {
 
 	for i := 0; i < count; i++ {
 		artifact := artifacts.Artifacts[i]
+		if r != nil && !r.MatchString(artifact.Name) {
+			continue
+		}
 		Download(downloadToolPath, artifact.ArchiveDownloadURL, filepath.Join(saveDir, fmt.Sprintf("%s.zip", artifact.Name)))
 	}
 }

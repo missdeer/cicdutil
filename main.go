@@ -7,15 +7,16 @@ import (
 )
 
 var (
-	provider         string
-	action           string
-	repository       string
-	username         string
-	token            string
-	downloadToolPath string
-	keep             string
-	download         string
-	saveDir          string
+	provider           string
+	action             string
+	project            string
+	username           string
+	token              string
+	downloadToolPath   string
+	keep               string
+	download           string
+	saveDir            string
+	downloadNameFilter string
 )
 
 type IProvider interface {
@@ -25,15 +26,16 @@ type IProvider interface {
 }
 
 func main() {
-	flag.StringVarP(&username, "username", "u", "", "Username of the repository")
+	flag.StringVarP(&username, "username", "u", "", "Username of the project")
 	flag.StringVarP(&token, "token", "t", "", "Token of the service provider")
-	flag.StringVarP(&repository, "repository", "r", "", "Name of repository to be operated on")
-	flag.StringVarP(&action, "action", "a", "", "Take action, candidate: list, delete, download")
-	flag.StringVarP(&provider, "provider", "p", "", "Service provider, candidate: gihtub, appveyor")
+	flag.StringVarP(&project, "project", "r", "", "Name of project to be operated on")
+	flag.StringVarP(&action, "action", "a", "list", "Take action, candidate: list, delete, download")
+	flag.StringVarP(&provider, "provider", "p", "github", "Service provider, candidate: gihtub, appveyor")
 	flag.StringVarP(&downloadToolPath, "downloader", "d", "", "Donwload tool path, supports aria2, curl, wget")
 	flag.StringVarP(&download, "download", "", "", "Download artifacts, can be count number or today")
-	flag.StringVarP(&keep, "keep", "k", "", "Keep artifacts that won't be deleted, can be count number or today")
+	flag.StringVarP(&keep, "keep", "k", "0", "Keep artifacts that won't be deleted, can be count number or today")
 	flag.StringVarP(&saveDir, "download-directory", "", ".", "Download file to the specified directory")
+	flag.StringVarP(&downloadNameFilter, "download-name-filter", "f", "", "Download name filter, it supports regular expression pattern")
 	flag.Parse()
 
 	var handler IProvider
