@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -129,6 +130,40 @@ func (av *Appveyor) ListArtifacts() {
 
 func (av *Appveyor) DeleteArtifacts() {
 
+}
+
+func (av *Appveyor) Build() {
+	u := `https://ci.appveyor.com/api/builds`
+	client := &http.Client{}
+	body := fmt.Sprintf(`{ "accountName": "%s", "projectSlug": "%s",  "branch": "master"	}`, username, project)
+	req, err := http.NewRequest("POST", u, strings.NewReader(body))
+	if err != nil {
+		log.Println("Could not parse artifacts list request:", err)
+		return
+	}
+	req.Header = http.Header{
+		"Authorization": []string{"Bearer " + token},
+		"Content-type":  []string{"application/json"},
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("Could not send artifacts list request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		log.Println("artifacts list response not 200:", resp.Status)
+		return
+	}
+
+	_, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("reading artifacts list failed", err)
+	}
+
+	return
 }
 
 func (av *Appveyor) DownloadArtifacts() {

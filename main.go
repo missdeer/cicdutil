@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strings"
 
 	flag "github.com/spf13/pflag"
 )
@@ -20,6 +21,7 @@ var (
 )
 
 type IProvider interface {
+	Build()
 	ListArtifacts()
 	DeleteArtifacts()
 	DownloadArtifacts()
@@ -29,7 +31,7 @@ func main() {
 	flag.StringVarP(&username, "username", "u", "", "Username of the project")
 	flag.StringVarP(&token, "token", "t", "", "Token of the service provider")
 	flag.StringVarP(&project, "project", "r", "", "Name of project to be operated on")
-	flag.StringVarP(&action, "action", "a", "list", "Take action, candidate: list, delete, download")
+	flag.StringVarP(&action, "action", "a", "list", "Take action, candidate: list, delete, download, build")
 	flag.StringVarP(&provider, "provider", "p", "github", "Service provider, candidate: gihtub, appveyor")
 	flag.StringVarP(&downloadToolPath, "downloader", "d", "", "Donwload tool path, supports aria2, curl, wget")
 	flag.StringVarP(&download, "download", "", "", "Download artifacts, can be count number or today")
@@ -39,7 +41,7 @@ func main() {
 	flag.Parse()
 
 	var handler IProvider
-	switch provider {
+	switch strings.ToLower(provider) {
 	case "github":
 		handler = &Github{}
 	case "appveyor":
@@ -47,13 +49,15 @@ func main() {
 	default:
 		log.Fatal("unsupported provider")
 	}
-	switch action {
+	switch strings.ToLower(action) {
 	case "list":
 		handler.ListArtifacts()
 	case "delete":
 		handler.DeleteArtifacts()
 	case "download":
 		handler.DownloadArtifacts()
+	case "build":
+		handler.Build()
 	default:
 		log.Fatal("unsupported action")
 	}

@@ -178,3 +178,7 @@ func (gh *Github) DownloadArtifacts() {
 		Download(downloadToolPath, artifact.ArchiveDownloadURL, filepath.Join(saveDir, fmt.Sprintf("%s.zip", artifact.Name)))
 	}
 }
+
+func (gh *Github) Build() {
+
+}
