@@ -25,13 +25,14 @@ type IProvider interface {
 	ListArtifacts()
 	DeleteArtifacts()
 	DownloadArtifacts()
+	DeleteFailedWorkflowRuns()
 }
 
 func main() {
 	flag.StringVarP(&username, "username", "u", "", "Username of the project")
 	flag.StringVarP(&token, "token", "t", "", "Token of the service provider")
 	flag.StringVarP(&project, "project", "r", "", "Name of project to be operated on")
-	flag.StringVarP(&action, "action", "a", "list", "Take action, candidate: list, delete, download, build")
+	flag.StringVarP(&action, "action", "a", "list", "Take action, candidate: list, delete, download, build, delete-failed-workflow-runs")
 	flag.StringVarP(&provider, "provider", "p", "github", "Service provider, candidate: gihtub, appveyor")
 	flag.StringVarP(&downloadToolPath, "downloader", "d", "", "Donwload tool path, supports aria2, curl, wget")
 	flag.StringVarP(&download, "download", "", "", "Download artifacts, can be count number or today")
@@ -58,6 +59,8 @@ func main() {
 		handler.DownloadArtifacts()
 	case "build":
 		handler.Build()
+	case "delete-failed-workflow-runs":
+		handler.DeleteFailedWorkflowRuns()
 	default:
 		log.Fatal("unsupported action")
 	}

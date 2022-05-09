@@ -236,3 +236,7 @@ func (av *Appveyor) DownloadArtifacts() {
 		}
 	}
 }
+
+func (av *Appveyor) DeleteFailedWorkflowRuns() {
+
+}

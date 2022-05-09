@@ -62,6 +62,85 @@ func (gh *Github) list() ([]byte, error) {
 	return c, nil
 }
 
+func (gh *Github) deleteWorkflowRun(id int) error {
+	u := fmt.Sprintf(`https://api.github.com/repos/%s/%s/actions/runs/%d`, username, project, id)
+	client := &http.Client{}
+
+	req, err := http.NewRequest("DELETE", u, nil)
+	if err != nil {
+		log.Println("Could not parse delete workflow runs request:", err)
+		return err
+	}
+
+	req.SetBasicAuth(username, token)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("Could not send delete workflow runs request:", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 204 {
+		log.Println("delete workflow runs response not 204:", resp.Status)
+		return fmt.Errorf("delete workflow runs response not 204:", resp.Status)
+	}
+
+	_, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("reading delete workflow runs response failed", err)
+		return err
+	}
+	log.Println("workflow runs", id, "has been deleted")
+	return nil
+}
+
+func (gh *Github) listFailedWorkflowRuns() ([]int, error) {
+	u := fmt.Sprintf(`https://api.github.com/repos/%s/%s/actions/runs`, username, project)
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", u, nil)
+	if err != nil {
+		log.Println("Could not parse workflow runs list request:", err)
+		return nil, err
+	}
+
+	req.SetBasicAuth(username, token)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("Could not send workflow runs list request:", err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		log.Println("workflow runs list response not 200:", resp.Status)
+		return nil, fmt.Errorf("workflow runs list response not 200:", resp.Status)
+	}
+
+	c, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("reading workflow runs list failed", err)
+		return nil, err
+	}
+
+	type WorkflowRuns struct {
+		ID         int    `json:"id"`
+		Conclusion string `json:"conclusion"`
+	}
+	var res []WorkflowRuns
+	if err = json.Unmarshal(c, &res); err != nil {
+		log.Println("can't unmarshal result", err)
+		return nil, err
+	}
+	ids := make([]int, len(res))
+	for _, r := range res {
+		ids = append(ids, r.ID)
+	}
+	return ids, nil
+}
+
 func (gh *Github) delete(id int) error {
 	u := fmt.Sprintf(`https://api.github.com/repos/%s/%s/actions/artifacts/%d`, username, project, id)
 	client := &http.Client{}
@@ -103,36 +182,43 @@ func (gh *Github) ListArtifacts() {
 }
 
 func (gh *Github) DeleteArtifacts() {
-	c, err := gh.list()
-	if err != nil {
-		return
-	}
-	var artifacts GithubActionsArtifacts
-	err = json.Unmarshal(c, &artifacts)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	if keep == "today" {
-		for _, artifact := range artifacts.Artifacts {
-			if artifact.CreatedAt.Year() != time.Now().UTC().Year() ||
-				artifact.CreatedAt.Month() != time.Now().UTC().Month() ||
-				artifact.CreatedAt.Day() != time.Now().UTC().Day() {
-				gh.delete(artifact.ID)
-			}
+	for {
+		c, err := gh.list()
+		if err != nil {
+			return
 		}
-		return
-	}
+		var artifacts GithubActionsArtifacts
+		err = json.Unmarshal(c, &artifacts)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		if keep == "today" {
+			for _, artifact := range artifacts.Artifacts {
+				if artifact.CreatedAt.Year() != time.Now().UTC().Year() ||
+					artifact.CreatedAt.Month() != time.Now().UTC().Month() ||
+					artifact.CreatedAt.Day() != time.Now().UTC().Day() {
+					gh.delete(artifact.ID)
+				}
+			}
+			return
+		}
 
-	count, err := strconv.Atoi(keep)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+		count, err := strconv.Atoi(keep)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 
-	for i := count; i < len(artifacts.Artifacts); i++ {
-		artifact := artifacts.Artifacts[i]
-		gh.delete(artifact.ID)
+		if len(artifacts.Artifacts) <= count {
+			log.Println(len(artifacts.Artifacts), "artifacts found, nothing to delete")
+			return
+		}
+
+		for i := count; i < len(artifacts.Artifacts); i++ {
+			artifact := artifacts.Artifacts[i]
+			gh.delete(artifact.ID)
+		}
 	}
 }
 
@@ -180,5 +266,9 @@ func (gh *Github) DownloadArtifacts() {
 }
 
 func (gh *Github) Build() {
+
+}
+
+func (gh *Github) DeleteFailedWorkflowRuns() {
 
 }
